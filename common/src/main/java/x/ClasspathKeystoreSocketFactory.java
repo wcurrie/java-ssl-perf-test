@@ -85,6 +85,7 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
     private SSLContext getSSLContext() throws ISOException {
         try{
             SSLContext sslc = SSLContext.getInstance( "SSL" );
+            sslc.getClientSessionContext().setSessionCacheSize(0);
             sslc.init( kma, tma, SecureRandom.getInstance("SHA1PRNG") );
             return sslc;
         } catch(Exception e) {
@@ -182,8 +183,11 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
     public Socket createSocket(String host, int port)
             throws IOException, ISOException
     {
-        if(socketFactory==null) socketFactory=createSocketFactory();
-        SSLSocket s = (SSLSocket) socketFactory.createSocket(host,port);
+//        if(socketFactory==null) socketFactory=createSocketFactory();
+//        SSLSocket s = (SSLSocket) socketFactory.createSocket(host,port);
+        // keeping a socket factory seems to enable session caching even when the cache size is set to zero...
+        // verify by using -Djavax.net.debug=ssl and grep -i resum
+        SSLSocket s = (SSLSocket) createSocketFactory().createSocket(host,port);
         verifyHostname(s);
         return s;
     }

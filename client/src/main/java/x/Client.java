@@ -1,10 +1,12 @@
 package x;
 
+import org.apache.commons.io.FileUtils;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.iso.packager.XMLPackager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,7 +51,9 @@ public class Client {
 
         System.out.printf("Took %dms%n", elapsed);
         System.out.println(results);
-        results.toCsv("results.csv");
+        String runName = String.format("results/%s-threads-%s-pings-no-session-cache", N_THREADS, PING_COUNT);
+        results.toCsv(runName + ".csv");
+        FileUtils.writeStringToFile(new File(runName + ".txt"), results.toString());
     }
 
     private Results summarise(List<Future<Result>> rttFutures) throws Exception {
