@@ -3,3 +3,6 @@ keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass 
 
 View cert using:
 keytool -export -alias selfsigned -keystore keystore.jks -storepass password|openssl x509 -inform DEF -noout -text
+
+When all else fails:
+-Djavax.net.debug=ssl

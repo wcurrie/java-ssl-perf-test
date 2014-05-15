@@ -14,7 +14,7 @@ public class Server {
         logger.addListener(new SimpleLogListener());
 
         ISOServer server = new ISOServer(8976, new XMLChannel(new XMLPackager()), new ThreadPool(100, 100));
-        server.setSocketFactory(ClasspathKeystoreSocketFactory.newServerSocketFactory());
+        server.setSocketFactory(ClasspathKeystoreSocketFactory.SERVER);
         server.addISORequestListener(new PingListener());
         server.setLogger(logger, "server");
         server.run();

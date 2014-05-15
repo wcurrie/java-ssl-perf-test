@@ -1,12 +1,8 @@
 package x;
 
-import org.jpos.core.Configurable;
-import org.jpos.core.Configuration;
-import org.jpos.core.ConfigurationException;
 import org.jpos.iso.ISOClientSocketFactory;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOServerSocketFactory;
-import org.jpos.iso.SunJSSESocketFactory;
 import org.jpos.util.SimpleLogSource;
 
 import javax.net.ssl.*;
@@ -16,65 +12,42 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.Security;
+import java.security.*;
 
 public class ClasspathKeystoreSocketFactory extends SimpleLogSource
-        implements ISOServerSocketFactory,ISOClientSocketFactory, Configurable
+        implements ISOServerSocketFactory,ISOClientSocketFactory
 {
+    public static final ClasspathKeystoreSocketFactory CLIENT = new ClasspathKeystoreSocketFactory();
+    public static final ClasspathKeystoreSocketFactory SERVER = new ClasspathKeystoreSocketFactory();
 
     private SSLContext sslc=null;
     private SSLServerSocketFactory serverFactory=null;
     private SSLSocketFactory socketFactory=null;
 
-    private String keyStore=null;
-    private String password=null;
-    private String keyPassword=null;
     private String serverName;
-    private boolean clientAuthNeeded=false;
+    private boolean clientAuthNeeded=true;
     private boolean serverAuthNeeded=false;
-    private String[] enabledCipherSuites;
 
-    private Configuration cfg;
+    private static final KeyStore ks = loadKeyStore();
+    private static final KeyManager[] kma = loadKeyManagers(ks);
+    private static final TrustManager[] tma = getTrustManagers(ks);
 
-    public void setKeyStore(String keyStore){
-        this.keyStore=keyStore;
-    }
-
-    public void setPassword(String password){
-        this.password=password;
-    }
-
-    public void setKeyPassword(String keyPassword){
-        this.keyPassword=keyPassword;
-    }
-
-    public void setServerName(String serverName){
-        this.serverName=serverName;
-    }
-
-    public void setClientAuthNeeded(boolean clientAuthNeeded){
-        this.clientAuthNeeded=clientAuthNeeded;
-    }
-
-    public void setServerAuthNeeded(boolean serverAuthNeeded){
-        this.serverAuthNeeded=serverAuthNeeded;
-    }
-
-    static
-    {
+    static {
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
     }
 
-    private TrustManager[] getTrustManagers(KeyStore ks)
-            throws GeneralSecurityException {
-        if (serverAuthNeeded) {
-            TrustManagerFactory tm = TrustManagerFactory.getInstance("SunX509" );
-            tm.init( ks );
-            return tm.getTrustManagers();
-        } else {
+    private boolean shareClientSslContext;
+
+    public void setShareClientSslContext(boolean shareClientSslContext) {
+        this.shareClientSslContext = shareClientSslContext;
+    }
+
+    private static TrustManager[] getTrustManagers(KeyStore ks) {
+//        if (false) {
+//            TrustManagerFactory tm = TrustManagerFactory.getInstance("SunX509" );
+//            tm.init( ks );
+//            return tm.getTrustManagers();
+//        } else {
             // Create a trust manager that does not validate certificate chains
             return new TrustManager[]{
                     new X509TrustManager() {
@@ -89,43 +62,43 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
                         }
                     }
             };
-        }
+//        }
     }
 
-    /**
-     * Create a SSLSocket Context
-     * @return the SSLContext
-     * @returns null if exception occurrs
-     */
     private SSLContext getSSLContext() throws ISOException {
-        if(password==null)  password=getPassword();
-        if(keyPassword ==null)  keyPassword=getKeyPassword();
-        if(keyStore==null || keyStore.length()==0) {
-            keyStore=System.getProperty("user.home")+ File.separator+".keystore";
-        }
-
         try{
-            KeyStore ks = KeyStore.getInstance( "JKS" );
-            InputStream fis = openKeystore();
-            ks.load(fis,password.toCharArray());
-            fis.close();
-            KeyManagerFactory km = KeyManagerFactory.getInstance( "SunX509");
-            km.init( ks, keyPassword.toCharArray() );
-            KeyManager[] kma = km.getKeyManagers();
-            TrustManager[] tma = getTrustManagers( ks );
             SSLContext sslc = SSLContext.getInstance( "SSL" );
             sslc.init( kma, tma, SecureRandom.getInstance("SHA1PRNG") );
             return sslc;
         } catch(Exception e) {
             throw new ISOException (e);
-        } finally {
-            password=null;
-            keyPassword=null;
         }
     }
 
-    private InputStream openKeystore() throws FileNotFoundException {
-        return getClass().getClassLoader().getResourceAsStream(keyStore);
+    private static KeyManager[] loadKeyManagers(KeyStore ks) {
+        try {
+            KeyManagerFactory km = KeyManagerFactory.getInstance("SunX509");
+            km.init( ks, "password".toCharArray() );
+            return km.getKeyManagers();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static KeyStore loadKeyStore() {
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            InputStream fis = openKeystore();
+            ks.load(fis,"password".toCharArray());
+            fis.close();
+            return ks;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static InputStream openKeystore() throws FileNotFoundException {
+        return ClasspathKeystoreSocketFactory.class.getClassLoader().getResourceAsStream("keystore.jks");
     }
 
     /**
@@ -150,8 +123,15 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
     protected SSLSocketFactory createSocketFactory()
             throws ISOException
     {
-        if(sslc==null) sslc=getSSLContext();
-        return sslc.getSocketFactory();
+        SSLContext context;
+        if (shareClientSslContext) {
+            // sketchy with oodles of clients?
+            if(sslc==null) sslc=getSSLContext();
+            context = sslc;
+        } else {
+            context = getSSLContext();
+        }
+        return context.getSocketFactory();
     }
 
     /**
@@ -170,9 +150,7 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
         ServerSocket socket = serverFactory.createServerSocket(port);
         SSLServerSocket serverSocket = (SSLServerSocket) socket;
         serverSocket.setNeedClientAuth(clientAuthNeeded);
-        if (enabledCipherSuites != null && enabledCipherSuites.length > 0) {
-            serverSocket.setEnabledCipherSuites(enabledCipherSuites);
-        }
+//        serverSocket.setEnabledCipherSuites(enabledCipherSuites);
         return socket;
     }
 
@@ -280,72 +258,4 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
         return dn.substring(0, i);
     }
 
-    public String getKeyStore() {
-        return keyStore;
-    }
-
-    // Have custom hooks get passwords
-    // You really need to modify these two implementations
-    protected String getPassword() {
-        return System.getProperty("jpos.ssl.storepass", "password");
-    }
-
-    protected String getKeyPassword() {
-        return System.getProperty("jpos.ssl.keypass", "password");
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public boolean getClientAuthNeeded() {
-        return clientAuthNeeded;
-    }
-
-    public boolean getServerAuthNeeded() {
-        return serverAuthNeeded;
-    }
-
-    public void setEnabledCipherSuites(String[] enabledCipherSuites) {
-        this.enabledCipherSuites = enabledCipherSuites;
-    }
-
-    public String[] getEnabledCipherSuites() {
-        return enabledCipherSuites;
-    }
-
-
-    /**
-     * @see org.jpos.core.Configurable#setConfiguration(org.jpos.core.Configuration)
-     */
-    public void setConfiguration(Configuration cfg) throws ConfigurationException {
-        this.cfg = cfg;
-        keyStore = cfg.get("keystore");
-        clientAuthNeeded = cfg.getBoolean("clientauth");
-        serverAuthNeeded = cfg.getBoolean("serverauth");
-        serverName = cfg.get("servername");
-        password = cfg.get("storepassword", null);
-        keyPassword = cfg.get("keypassword", null);
-        enabledCipherSuites = cfg.getAll("addEnabledCipherSuite");
-    }
-    public Configuration getConfiguration() {
-        return cfg;
-    }
-
-    public static ClasspathKeystoreSocketFactory newClientSocketFactory() {
-        ClasspathKeystoreSocketFactory factory = new ClasspathKeystoreSocketFactory();
-        factory.setKeyStore("keystore.jks");
-        factory.setPassword("password");
-        factory.setKeyPassword("password");
-        return factory;
-    }
-
-    public static ClasspathKeystoreSocketFactory newServerSocketFactory() {
-        ClasspathKeystoreSocketFactory factory = new ClasspathKeystoreSocketFactory();
-        factory.setKeyStore("keystore.jks");
-        factory.setPassword("password");
-        factory.setKeyPassword("password");
-        factory.setClientAuthNeeded(true);
-        return factory;
-    }
 }
