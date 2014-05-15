@@ -8,6 +8,9 @@ import org.jpos.util.SimpleLogListener;
 import org.jpos.util.ThreadPool;
 
 public class Server {
+    static {
+        System.setProperty("java.security.egd", "file:/dev/./urandom");
+    }
     public static void main(String[] args) throws Exception {
         Logger logger = new Logger();
         logger.setName("logger");

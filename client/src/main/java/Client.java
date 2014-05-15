@@ -1,3 +1,4 @@
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
@@ -15,7 +16,7 @@ public class Client {
     public static final String HOST = "192.168.0.6";
 
     public static void main(String[] args) throws Exception {
-        ExecutorService executor = Executors.newFixedThreadPool(20);
+        ExecutorService executor = Executors.newFixedThreadPool(10);
         try {
             runTest(executor);
         } finally {
@@ -26,15 +27,19 @@ public class Client {
     private static void runTest(ExecutorService executor) throws Exception {
         long t = System.currentTimeMillis();
         List<Future<Long>> rttFutures = kickOffPings(executor, 1000);
-        SummaryStatistics statistics = summarise(rttFutures);
+        DescriptiveStatistics statistics = summarise(rttFutures);
         long elapsed = System.currentTimeMillis() - t;
 
         System.out.printf("Took %dms%n", elapsed);
         System.out.println(statistics);
+        for (int i = 50; i <= 100; i += 10) {
+            double p = statistics.getPercentile(i);
+            System.out.printf("%d%% = %f%n", i, p);
+        }
     }
 
-    private static SummaryStatistics summarise(List<Future<Long>> rttFutures) throws Exception {
-        SummaryStatistics statistics = new SummaryStatistics();
+    private static DescriptiveStatistics summarise(List<Future<Long>> rttFutures) throws Exception {
+        DescriptiveStatistics statistics = new DescriptiveStatistics();
         for (Future<Long> f : rttFutures) {
             Long rtt = f.get(5, TimeUnit.SECONDS);
             statistics.addValue(rtt);
