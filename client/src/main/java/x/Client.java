@@ -1,14 +1,12 @@
-import org.apache.commons.math3.stat.Frequency;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+package x;
+
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.iso.packager.XMLPackager;
-import x.ClasspathKeystoreSocketFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
@@ -18,14 +16,12 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 public class Client {
 
     public static final String HOST = "192.168.0.6";
-    public static final int N_THREADS = 20;
+    public static final int N_THREADS = 10;
     public static final int PING_COUNT = 1000;
 
     private CyclicBarrier cyclicBarrier;
     private ExecutorService executor;
     private ExecutorService cleaner;
-    private DescriptiveStatistics rtts;
-    private Frequency outcomes;
 
     public static void main(String[] args) throws Exception {
         ClasspathKeystoreSocketFactory.setKeyLength(KeyLength.Key_2048);
@@ -36,8 +32,7 @@ public class Client {
         cyclicBarrier = new CyclicBarrier(N_THREADS);
         executor = Executors.newFixedThreadPool(N_THREADS);
         cleaner = Executors.newSingleThreadExecutor();
-        rtts = new DescriptiveStatistics();
-        outcomes = new Frequency();
+
         try {
             runTest();
         } finally {
@@ -48,30 +43,25 @@ public class Client {
 
     private void runTest() throws Exception {
         long t = System.currentTimeMillis();
-        List<Future<Long>> rttFutures = kickOffPings(PING_COUNT);
-        summarise(rttFutures);
+        List<Future<Result>> rttFutures = kickOffPings(PING_COUNT);
+        Results results = summarise(rttFutures);
         long elapsed = System.currentTimeMillis() - t;
 
         System.out.printf("Took %dms%n", elapsed);
-        System.out.println(rtts);
-        for (Integer i : Arrays.asList(50, 80, 90, 95, 98, 99)) {
-            double p = rtts.getPercentile(i);
-            System.out.printf("%d%% = %f%n", i, p);
-        }
-        System.out.println(outcomes);
+        System.out.println(results);
+        results.toCsv("results.csv");
     }
 
-    private void summarise(List<Future<Long>> rttFutures) throws Exception {
+    private Results summarise(List<Future<Result>> rttFutures) throws Exception {
+        Results results = new Results();
         int remaining = PING_COUNT;
-        for (Future<Long> f : rttFutures) {
+        for (Future<Result> f : rttFutures) {
             try {
-                Long rtt = f.get(5, TimeUnit.SECONDS);
-                rtts.addValue(rtt);
-                outcomes.addValue("success");
+                results.add(f.get(5, TimeUnit.SECONDS));
             } catch (ExecutionException e) {
-                outcomes.addValue(e.getCause().toString());
+                results.addOutlier(e.getCause().toString());
             } catch (TimeoutException e) {
-                outcomes.addValue(e.toString());
+                results.addOutlier(e.toString());
             } finally {
                 remaining--;
                 if (remaining < N_THREADS) {
@@ -80,28 +70,38 @@ public class Client {
                 }
             }
         }
+        return results;
     }
 
-    private List<Future<Long>> kickOffPings(int clients) {
-        List<Future<Long>> rttFutures = new ArrayList<Future<Long>>();
+    private List<Future<Result>> kickOffPings(int clients) {
+        List<Future<Result>> rttFutures = new ArrayList<Future<Result>>();
         for (int i = 0; i < clients; i++) {
             rttFutures.add(executor.submit(new ConnectAndPing()));
         }
         return rttFutures;
     }
 
-    private class ConnectAndPing implements Callable<Long> {
+    private class ConnectAndPing implements Callable<Result> {
 
         @Override
-        public Long call() throws Exception {
-            XMLChannel channel = newChannel();
-            rallyBeforeACharge();
+        public Result call() throws Exception {
+            XMLChannel channel = null;
             long t = System.currentTimeMillis();
-            channel.send(ping());
-            channel.receive();
-            long rtt = System.currentTimeMillis() - t;
-            cleaner.submit(disconnect(channel));
-            return rtt;
+            try {
+                channel = newChannel();
+                rallyBeforeACharge();
+                long pingStart = System.currentTimeMillis();
+                channel.send(ping());
+                channel.receive();
+                long rtt = System.currentTimeMillis() - pingStart;
+                return new Result(t, rtt);
+            } catch (Exception e) {
+                return new Result(t, e);
+            } finally {
+                if (channel != null) {
+                    cleaner.submit(disconnect(channel));
+                }
+            }
         }
 
         private void rallyBeforeACharge() throws InterruptedException {
