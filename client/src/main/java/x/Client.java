@@ -51,7 +51,7 @@ public class Client {
 
         System.out.printf("Took %dms%n", elapsed);
         System.out.println(results);
-        String runName = String.format("results/%s-threads-%s-pings-no-session-cache", N_THREADS, PING_COUNT);
+        String runName = String.format("results/%s-threads-%s-pings-%s-session-cache", N_THREADS, PING_COUNT, ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no");
         results.toCsv(runName + ".csv");
         FileUtils.writeStringToFile(new File(runName + ".txt"), results.toString());
     }
