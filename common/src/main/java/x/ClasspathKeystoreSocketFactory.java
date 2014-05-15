@@ -28,12 +28,29 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
     private boolean clientAuthNeeded=true;
     private boolean serverAuthNeeded=false;
 
-    private static final KeyStore ks = loadKeyStore();
-    private static final KeyManager[] kma = loadKeyManagers(ks);
-    private static final TrustManager[] tma = getTrustManagers(ks);
+    private static KeyStore ks = loadKeyStore(KeyLength.Key_2048.keystore);
+    private static KeyManager[] kma = loadKeyManagers(ks);
+    private static TrustManager[] tma = getTrustManagers(ks);
 
     static {
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+    }
+
+    public enum KeyLength {
+        Key_2048("keystore.jks"),
+        Key_4096("keystore-4096.jks");
+
+        private final String keystore;
+
+        KeyLength(String keystore) {
+            this.keystore = keystore;
+        }
+    }
+
+    public static void setKeyLength(KeyLength keyLength) {
+        ks = loadKeyStore(keyLength.keystore);
+        kma = loadKeyManagers(ks);
+        tma = getTrustManagers(ks);
     }
 
     private boolean shareClientSslContext;
@@ -85,10 +102,10 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
         }
     }
 
-    private static KeyStore loadKeyStore() {
+    private static KeyStore loadKeyStore(String keystore) {
         try {
             KeyStore ks = KeyStore.getInstance("JKS");
-            InputStream fis = openKeystore();
+            InputStream fis = openKeystore(keystore);
             ks.load(fis,"password".toCharArray());
             fis.close();
             return ks;
@@ -97,8 +114,8 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
         }
     }
 
-    private static InputStream openKeystore() throws FileNotFoundException {
-        return ClasspathKeystoreSocketFactory.class.getClassLoader().getResourceAsStream("keystore.jks");
+    private static InputStream openKeystore(String keystore) throws FileNotFoundException {
+        return ClasspathKeystoreSocketFactory.class.getClassLoader().getResourceAsStream(keystore);
     }
 
     /**
