@@ -1,0 +1,5 @@
+Keystore created using:
+keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048
+
+View cert using:
+keytool -export -alias selfsigned -keystore keystore.jks -storepass password|openssl x509 -inform DEF -noout -text
