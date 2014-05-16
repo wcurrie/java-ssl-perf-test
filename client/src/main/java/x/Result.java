@@ -43,6 +43,11 @@ public class Result implements Comparable<Result> {
 
     @Override
     public int compareTo(Result o) {
-        return Long.compare(this.getStart(), o.getStart());
+        return compare(this.getStart(), o.getStart());
+    }
+
+    // provide jdk 1.6 support ...
+    private static int compare(long x, long y) {
+        return (x < y) ? -1 : ((x == y) ? 0 : 1);
     }
 }

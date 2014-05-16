@@ -1,21 +1,26 @@
 package x;
 
 import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
 import org.jpos.iso.channel.XMLChannel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class ClientRunner {
 
     public static final String HOST = "192.168.0.6";
+
     private int nThreads;
     private int pingCount;
+    private final AtomicInteger openChannels = new AtomicInteger(0);
 
     private CyclicBarrier cyclicBarrier;
     private ExecutorService executor;
@@ -31,7 +36,7 @@ public class ClientRunner {
         pingCount = 10000;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
-        cyclicBarrier = new CyclicBarrier(nThreads);
+        cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
         executor = Executors.newFixedThreadPool(nThreads);
         cleaner = Executors.newSingleThreadExecutor();
 
@@ -41,6 +46,23 @@ public class ClientRunner {
             executor.shutdown();
             cleaner.shutdown();
         }
+    }
+
+    private Runnable newProgressMeter() {
+        return new Runnable() {
+            private int count;
+            private long last = System.currentTimeMillis();
+            @Override
+            public void run() {
+                long now = System.currentTimeMillis();
+                long delay = now - last;
+                last = now;
+                count++;
+                int pingsLaunched = count * nThreads;
+                int percent = (int) (pingsLaunched * 100.0 / pingCount);
+                System.out.println(new DateTime().toString("HH:mm:ss,SSS") + ": " + pingsLaunched + "/" + pingCount + " " + percent + "% " + delay + "ms, channels=" + openChannels.get());
+            }
+        };
     }
 
     private void runTest() throws Exception {
@@ -90,6 +112,7 @@ public class ClientRunner {
         @Override
         public Result call() throws Exception {
             XMLChannel channel = Client.newChannel(HOST);
+            openChannels.incrementAndGet();
             long t = System.currentTimeMillis();
             try {
                 channel.connect();
@@ -120,6 +143,7 @@ public class ClientRunner {
             public void run() {
                 try {
                     channel.disconnect();
+                    openChannels.decrementAndGet();
                 } catch (IOException ignored) {
                 }
             }

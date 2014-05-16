@@ -2,6 +2,7 @@ package x;
 
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
+import org.jpos.iso.ISOPackager;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.iso.packager.XMLPackager;
 import org.jpos.util.Logger;
@@ -11,11 +12,21 @@ import java.util.Date;
 
 public class Client {
 
+    private static final ISOPackager PACKAGER = newPackager();
+
+    private static ISOPackager newPackager() {
+        try {
+            return new XMLPackager();
+        } catch (ISOException e) {
+            throw new RuntimeException();
+        }
+    }
+
     public static void main(String[] args) throws IOException, ISOException {
         Logger logger = new Logger();
         logger.setName("logger");
 
-        XMLChannel channel = newChannel("localhost");
+        XMLChannel channel = newChannel("192.168.0.6");
         channel.setLogger(logger, "client");
         channel.connect();
         long l = timeToPing(channel);
@@ -26,9 +37,10 @@ public class Client {
 
     public static XMLChannel newChannel(String host) {
         try {
-            XMLChannel channel = new XMLChannel(host, 8976, new XMLPackager());
+            XMLChannel channel = new XMLChannel(host, 8976, PACKAGER);
 //            channel.setSocketFactory(ClasspathKeystoreSocketFactory.CLIENT);
             channel.setTimeout(5000);
+            channel.setSoLinger(true, 0); // disconnect quickly
             return channel;
         } catch (Exception e) {
             throw new RuntimeException(e);
