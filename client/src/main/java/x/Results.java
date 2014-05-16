@@ -75,14 +75,13 @@ public class Results {
                 getPercentiles(s);
     }
 
-    public void toCsv(String file) throws IOException {
+    public void toCsv(String file, long t) throws IOException {
         Collections.sort(all);
         PrintWriter writer = new PrintWriter(new FileWriter(file));
-        long firstTime = all.get(0).getStart();
         try {
 //            writer.println("time,rtt,outcome");
             for (Result result : all) {
-                writer.printf("%d,%d,%s%n", result.getStart() - firstTime, result.getRtt(), result.getOutcome());
+                writer.printf("%d,%d,%s%n", result.getStart() - t, result.getRtt(), result.getOutcome());
             }
         } finally {
             writer.close();

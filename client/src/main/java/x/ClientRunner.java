@@ -34,7 +34,7 @@ public class ClientRunner {
     private void run() throws Exception {
         nThreads = 100;
         pingCount = 10000;
-        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
+        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
         executor = Executors.newFixedThreadPool(nThreads);
@@ -66,16 +66,21 @@ public class ClientRunner {
     }
 
     private void runTest() throws Exception {
+        StatsCollector.startMonitoring(HOST);
+
         long t = System.currentTimeMillis();
         List<Future<Result>> rttFutures = kickOffPings(pingCount);
         Results results = summarise(rttFutures);
         long elapsed = System.currentTimeMillis() - t;
 
+        String serverCpuStats = StatsCollector.collectStats(HOST, t);
+
         System.out.printf("Took %dms%n", elapsed);
         System.out.println(results);
         String runName = String.format("results/%s-threads-%s-pings-%s-session-cache", nThreads, pingCount, ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no");
-        results.toCsv(runName + ".csv");
+        results.toCsv(runName + ".csv", t);
         FileUtils.writeStringToFile(new File(runName + ".txt"), results.toString());
+        FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
     }
 
     private Results summarise(List<Future<Result>> rttFutures) throws Exception {

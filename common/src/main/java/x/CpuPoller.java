@@ -46,10 +46,11 @@ public class CpuPoller implements Runnable {
     public void run() {
         while (!die) {
             try {
-                AttributeList list = mbs.getAttributes(name, new String[]{ "SystemLoadAverage" });
-                Attribute attribute = (Attribute) list.get(0);
-                double v = (Double) attribute.getValue();
-                stats.add(new Stat(System.currentTimeMillis(), v));
+                stats.add(new Stat(
+                        System.currentTimeMillis(),
+                        getDouble("SystemLoadAverage"),
+                        (int) (getDouble("SystemCpuLoad") * 100),
+                        (int) (getDouble("ProcessCpuLoad") * 100)));
                 Thread.sleep(100);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -58,14 +59,24 @@ public class CpuPoller implements Runnable {
         }
     }
 
+    private double getDouble(String name) throws InstanceNotFoundException, ReflectionException {
+        AttributeList list = mbs.getAttributes(this.name, new String[]{name});
+        Attribute attribute = (Attribute) list.get(0);
+        return (Double) attribute.getValue();
+    }
+
     public static class Stat {
 
         private final long time;
         private final double loadAverage;
+        private final int systemCpuLoad;
+        private final int processCpuLoad;
 
-        public Stat(long time, double loadAverage) {
+        public Stat(long time, double loadAverage, int systemCpuLoad, int processCpuLoad) {
             this.time = time;
             this.loadAverage = loadAverage;
+            this.systemCpuLoad = systemCpuLoad;
+            this.processCpuLoad = processCpuLoad;
         }
 
         public long getTime() {
@@ -74,6 +85,14 @@ public class CpuPoller implements Runnable {
 
         public double getLoadAverage() {
             return loadAverage;
+        }
+
+        public int getSystemCpuLoad() {
+            return systemCpuLoad;
+        }
+
+        public int getProcessCpuLoad() {
+            return processCpuLoad;
         }
 
         @Override

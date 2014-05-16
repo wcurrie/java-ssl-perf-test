@@ -38,7 +38,10 @@ public class StatsListener implements ISORequestListener {
     private String toCsv(List<CpuPoller.Stat> stats) {
         StringBuilder b = new StringBuilder();
         for (CpuPoller.Stat s : stats) {
-            b.append(s.getTime()).append(",").append(s.getLoadAverage()).append("\n");
+            b.append(s.getTime()).append(",")
+                    .append(s.getLoadAverage()).append(",")
+                    .append(s.getSystemCpuLoad()).append(",")
+                    .append(s.getProcessCpuLoad()).append("\n");
         }
         return b.toString();
     }
