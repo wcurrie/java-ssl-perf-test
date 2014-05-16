@@ -1,0 +1,27 @@
+rtts:
+n: 9996
+min: 104
+max: 6140
+mean: 1289
+50% = 1306
+80% = 1386
+90% = 1429
+95% = 1487
+98% = 1570
+99% = 1641
+connects:
+n: 9996
+min: 3
+max: 680
+mean: 45
+50% = 40
+80% = 57
+90% = 69
+95% = 99
+98% = 142
+99% = 300
+
+outcomes:Value 	 Freq. 	 Pct. 	 Cum Pct. 
+fail: java.util.concurrent.TimeoutException	3	0%	0%
+java.net.SocketTimeoutException: Read timed out	1	0%	0%
+success	9996	100%	100%
