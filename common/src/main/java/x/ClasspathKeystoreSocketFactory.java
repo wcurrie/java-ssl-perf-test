@@ -167,7 +167,7 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
             throws IOException, ISOException
     {
         if(serverFactory==null) serverFactory=createServerSocketFactory();
-        ServerSocket socket = serverFactory.createServerSocket(port);
+        ServerSocket socket = serverFactory.createServerSocket(port, 50);
         SSLServerSocket serverSocket = (SSLServerSocket) socket;
         serverSocket.setNeedClientAuth(clientAuthNeeded);
 //        serverSocket.setEnabledCipherSuites(enabledCipherSuites);

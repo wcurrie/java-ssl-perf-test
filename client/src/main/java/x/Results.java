@@ -14,20 +14,15 @@ import java.util.List;
 
 public class Results {
 
-    private final DescriptiveStatistics rtts;
     private final Frequency outcomes;
     private final List<Result> all;
 
     public Results() {
-        rtts = new DescriptiveStatistics();
         outcomes = new Frequency();
         all = new ArrayList<Result>();
     }
 
     public void add(Result result) {
-        if (result.isSuccess()) {
-            rtts.addValue(result.getRtt());
-        }
         outcomes.addValue(result.getOutcome());
         all.add(result);
     }
@@ -36,18 +31,48 @@ public class Results {
         outcomes.addValue("fail: " + s);
     }
 
-    public String getPercentiles() {
+    public static String getPercentiles(DescriptiveStatistics statistics) {
         StringWriter writer = new StringWriter();
         for (Integer i : Arrays.asList(50, 80, 90, 95, 98, 99)) {
-            double p = rtts.getPercentile(i);
-            writer.write(String.format("%d%% = %f%n", i, p));
+            double p = statistics.getPercentile(i);
+            writer.write(String.format("%d%% = %d%n", i, (int) p));
         }
         return writer.toString();
     }
 
+    public DescriptiveStatistics getConnectTimes() {
+        DescriptiveStatistics s = new DescriptiveStatistics();
+        for (Result result : all) {
+            if (result.isSuccess()) {
+                s.addValue(result.getConnectTime());
+            }
+        }
+        return s;
+    }
+
+    public DescriptiveStatistics getRtts() {
+        DescriptiveStatistics s = new DescriptiveStatistics();
+        for (Result result : all) {
+            if (result.isSuccess()) {
+                s.addValue(result.getRtt());
+            }
+        }
+        return s;
+    }
+
     @Override
     public String toString() {
-        return "rtts:\n" + rtts + "\npercentiles:\n" + getPercentiles() + "\noutcomes:" + outcomes;
+        return "rtts:\n" + format(getRtts()) +
+                "connects:\n" + format(getConnectTimes()) +
+                "\noutcomes:" + outcomes;
+    }
+
+    private String format(DescriptiveStatistics s) {
+        return  "n: " + (int) s.getN() + "\n" +
+                "min: " + (int) s.getMin() + "\n" +
+                "max: " + (int) s.getMax() + "\n" +
+                "mean: " + (int) s.getMean() + "\n" +
+                getPercentiles(s);
     }
 
     public void toCsv(String file) throws IOException {

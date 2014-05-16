@@ -27,3 +27,7 @@ client
                   rsa 1024 bits 0.000324s 0.000021s   3088.4  47746.5
                   rsa 2048 bits 0.002151s 0.000068s    465.0  14609.0
                   rsa 4096 bits 0.015766s 0.000249s     63.4   4008.0
+
+Learnings:
+* Running into http://stackoverflow.com/questions/16191236/tomcat-startup-fails-due-to-java-net-socketexception-invalid-argument-on-mac-o on osx java 1.7.0_45
+
