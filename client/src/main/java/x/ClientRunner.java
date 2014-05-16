@@ -34,8 +34,8 @@ public class ClientRunner {
     private void run() throws Exception {
         nThreads = 100;
         pingCount = 10000;
-        Client.ssl = true;
-        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
+        Client.ssl = false;
+        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
         executor = Executors.newFixedThreadPool(nThreads);
@@ -133,7 +133,7 @@ public class ClientRunner {
             try {
                 channel.connect();
                 long connectTime = System.currentTimeMillis() - t;
-                rallyBeforeACharge();
+//                rallyBeforeACharge();
                 long rtt = Client.timeToPing(channel);
                 return new Result(t, rtt, connectTime);
             } catch (Exception e) {

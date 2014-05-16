@@ -18,7 +18,7 @@ set ylabel "ping rtt (ms)"
 plot "$a" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt cache",\
      "$b" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no cache",\
      "$c" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no ssl",\
-     "$a1" using 1:(\$4 == 100 ? 3000 : 1/0) title "100% cpu cache",\
-     "$b1" using 1:(\$4 == 100 ? 3200 : 1/0) title "100% cpu no cache",\
-     "$c1" using 1:(\$4 == 100 ? 3400 : 1/0) title "100% cpu no sll"
+     "$a1" using 1:(\$4 == 100 ? -200 : 1/0) title "100% cpu cache",\
+     "$b1" using 1:(\$4 == 100 ? -400 : 1/0) title "100% cpu no cache",\
+     "$c1" using 1:(\$4 == 100 ? -600 : 1/0) title "100% cpu no ssl"
 EOF
