@@ -13,6 +13,7 @@ import java.util.Date;
 public class Client {
 
     private static final ISOPackager PACKAGER = newPackager();
+    public static boolean ssl;
 
     private static ISOPackager newPackager() {
         try {
@@ -38,7 +39,9 @@ public class Client {
     public static XMLChannel newChannel(String host) {
         try {
             XMLChannel channel = new XMLChannel(host, 8976, PACKAGER);
-            channel.setSocketFactory(ClasspathKeystoreSocketFactory.CLIENT);
+            if (ssl) {
+                channel.setSocketFactory(ClasspathKeystoreSocketFactory.CLIENT);
+            }
             channel.setTimeout(5000);
             channel.setSoLinger(true, 0); // disconnect quickly
             return channel;

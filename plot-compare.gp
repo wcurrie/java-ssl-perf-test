@@ -4,6 +4,8 @@ a=results/100-threads-10000-pings-with-session-cache.csv
 a1=results/100-threads-10000-pings-with-session-cache-server-cpu.csv
 b=results/100-threads-10000-pings-no-session-cache.csv
 b1=results/100-threads-10000-pings-no-session-cache-server-cpu.csv
+c=results/100-threads-10000-pings-plaintext.csv
+c1=results/100-threads-10000-pings-plaintext-server-cpu.csv
 out=results/diff.png
 
 gnuplot <<EOF
@@ -15,6 +17,8 @@ set xlabel "time into test run (ms)"
 set ylabel "ping rtt (ms)"
 plot "$a" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt cache",\
      "$b" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no cache",\
+     "$c" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no ssl",\
      "$a1" using 1:(\$4 == 100 ? 3000 : 1/0) title "100% cpu cache",\
-     "$b1" using 1:(\$4 == 100 ? 3200 : 1/0) title "100% cpu no cache"
+     "$b1" using 1:(\$4 == 100 ? 3200 : 1/0) title "100% cpu no cache",\
+     "$c1" using 1:(\$4 == 100 ? 3400 : 1/0) title "100% cpu no sll"
 EOF

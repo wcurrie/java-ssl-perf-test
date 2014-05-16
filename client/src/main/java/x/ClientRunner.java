@@ -34,6 +34,7 @@ public class ClientRunner {
     private void run() throws Exception {
         nThreads = 100;
         pingCount = 10000;
+        Client.ssl = true;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
@@ -75,12 +76,22 @@ public class ClientRunner {
 
         String serverCpuStats = StatsCollector.collectStats(HOST, t);
 
-        System.out.printf("Took %dms%n", elapsed);
-        System.out.println(results);
-        String runName = String.format("results/%s-threads-%s-pings-%s-session-cache", nThreads, pingCount, ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no");
+        String report = String.format("Took %dms%n%s", elapsed, results);
+        System.out.println(report);
+        String runName = runName();
         results.toCsv(runName + ".csv", t);
-        FileUtils.writeStringToFile(new File(runName + ".txt"), results.toString());
+        FileUtils.writeStringToFile(new File(runName + ".txt"), report);
         FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
+    }
+
+    private String runName() {
+        String sslConfig;
+        if (Client.ssl) {
+            sslConfig = (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no") + "-session-cache";
+        } else {
+            sslConfig = "plaintext";
+        }
+        return String.format("results/%s-threads-%s-pings-%s", nThreads, pingCount, sslConfig);
     }
 
     private Results summarise(List<Future<Result>> rttFutures) throws Exception {
