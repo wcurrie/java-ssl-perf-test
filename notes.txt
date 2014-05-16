@@ -30,4 +30,6 @@ client
 
 Learnings:
 * Running into http://stackoverflow.com/questions/16191236/tomcat-startup-fails-due-to-java-net-socketexception-invalid-argument-on-mac-o on osx java 1.7.0_45
-
+* Fail on jdk8:
+    java(6404,0x120c6e000) malloc: *** error for object 0x100000000: pointer being freed was not allocated
+    *** set a breakpoint in malloc_error_break to debug

@@ -37,6 +37,7 @@ public class Server {
             server.setSocketFactory(ClasspathKeystoreSocketFactory.SERVER);
         }
         server.addISORequestListener(new PingListener());
+        server.addISORequestListener(new StatsListener());
         server.setLogger(logger, "server");
         System.out.println("Listening on " + PORT + " " + (keyLength == null ? "plain" : "ssl " + keyLength));
         server.run();

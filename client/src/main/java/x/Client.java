@@ -38,7 +38,7 @@ public class Client {
     public static XMLChannel newChannel(String host) {
         try {
             XMLChannel channel = new XMLChannel(host, 8976, PACKAGER);
-//            channel.setSocketFactory(ClasspathKeystoreSocketFactory.CLIENT);
+            channel.setSocketFactory(ClasspathKeystoreSocketFactory.CLIENT);
             channel.setTimeout(5000);
             channel.setSoLinger(true, 0); // disconnect quickly
             return channel;

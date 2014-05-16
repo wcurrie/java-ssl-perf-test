@@ -10,6 +10,10 @@ import java.io.IOException;
 public class PingListener implements ISORequestListener {
     @Override
     public boolean process(ISOSource source, ISOMsg m) {
+        if (!"0800".equals(m.getString(0))) {
+            return false;
+        }
+
         ISOMsg response = (ISOMsg) m.clone();
         try {
             response.setResponseMTI();
