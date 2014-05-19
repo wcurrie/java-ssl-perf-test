@@ -2,4 +2,3 @@
 .idea
 target
 dependency-reduced-pom.xml
-results/*.csv

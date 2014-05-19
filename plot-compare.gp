@@ -12,13 +12,25 @@ gnuplot <<EOF
 set datafile separator ","
 set term pngcairo size 1280,960
 set output "$out"
+set multiplot
+set size 1,0.8
+set origin 0,0.2
 set title "ping round trip time during soak test"
 set xlabel "time into test run (ms)"
 set ylabel "ping rtt (ms)"
+set xrange [] writeback
 plot "$a" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt cache",\
      "$b" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no cache",\
-     "$c" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no ssl",\
-     "$a1" using 1:(\$4 == 100 ? -200 : 1/0) title "100% cpu cache",\
-     "$b1" using 1:(\$4 == 100 ? -400 : 1/0) title "100% cpu no cache",\
-     "$c1" using 1:(\$4 == 100 ? -600 : 1/0) title "100% cpu no ssl"
+     "$c" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no ssl"
+
+set size 1,0.2
+set origin 0,0
+set title "server cpu usage % time during soak test"
+set ylabel "cpu %"
+set xlabel
+set xrange restore
+plot "$a1" using 1:4 title "cpu % cache",\
+     "$b1" using 1:4 title "cpu % no cache",\
+     "$c1" using 1:4 title "cpu % no ssl"
+unset multiplot     
 EOF

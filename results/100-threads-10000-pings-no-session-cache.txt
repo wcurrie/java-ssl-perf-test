@@ -1,28 +1,27 @@
-Took 100337ms
+Took 90307ms
 rtts:
-n: 9938
-min: 171
-max: 2299
-mean: 888
-50% = 869
-80% = 1088
-90% = 1220
-95% = 1353
-98% = 1511
-99% = 1622
+n: 9992
+min: 159
+max: 2490
+mean: 863
+50% = 855
+80% = 990
+90% = 1083
+95% = 1158
+98% = 1274
+99% = 1422
 connects:
-n: 9938
-min: 2
-max: 706
-mean: 32
-50% = 20
-80% = 37
-90% = 55
-95% = 85
-98% = 138
-99% = 279
+n: 9992
+min: 3
+max: 1373
+mean: 31
+50% = 18
+80% = 35
+90% = 52
+95% = 72
+98% = 131
+99% = 191
 
 outcomes:Value 	 Freq. 	 Pct. 	 Cum Pct. 
-fail: java.util.concurrent.TimeoutException	2	0%	0%
-java.net.SocketTimeoutException: Read timed out	60	1%	1%
-success	9938	99%	100%
+java.net.SocketTimeoutException: Read timed out	8	0%	0%
+success	9992	100%	100%
