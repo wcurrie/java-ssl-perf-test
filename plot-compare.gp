@@ -10,7 +10,7 @@ out=results/diff.png
 
 gnuplot <<EOF
 set datafile separator ","
-set term pngcairo size 1280,960
+set term pngcairo dashed size 1280,960
 set output "$out"
 set multiplot
 set size 1,0.8
@@ -19,9 +19,9 @@ set title "ping round trip time during soak test"
 set xlabel "time into test run (ms)"
 set ylabel "ping rtt (ms)"
 set xrange [] writeback
-plot "$a" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt cache",\
-     "$b" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no cache",\
-     "$c" using 1:(\$2 == -1 ? 1/0 : \$2) title "rtt no ssl"
+plot "$a" using 4:(\$2 == -1 ? 1/0 : \$2):1:4 title "rtt cache" with xerrorbars,\
+     "$b" using 4:(\$2 == -1 ? 1/0 : \$2):1:4 title "rtt no cache" with xerrorbars,\
+     "$c" using 4:(\$2 == -1 ? 1/0 : \$2):1:4 title "rtt no ssl" with xerrorbars
 
 set size 1,0.2
 set origin 0,0

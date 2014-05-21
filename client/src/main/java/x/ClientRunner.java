@@ -7,7 +7,6 @@ import org.jpos.iso.channel.XMLChannel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +33,7 @@ public class ClientRunner {
     private void run() throws Exception {
         nThreads = 100;
         pingCount = 10000;
-        Client.ssl = false;
+        Client.ssl = true;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
@@ -134,8 +133,10 @@ public class ClientRunner {
                 channel.connect();
                 long connectTime = System.currentTimeMillis() - t;
 //                rallyBeforeACharge();
-                long rtt = Client.timeToPing(channel);
-                return new Result(t, rtt, connectTime);
+                long start = System.currentTimeMillis();
+                Client.ping(channel);
+                long end = System.currentTimeMillis();
+                return new Result(start, end, connectTime);
             } catch (Exception e) {
                 return new Result(t, e);
             } finally {

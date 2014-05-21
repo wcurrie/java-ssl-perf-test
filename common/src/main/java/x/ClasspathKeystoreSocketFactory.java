@@ -25,7 +25,7 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
     private SSLSocketFactory socketFactory=null;
 
     private String serverName;
-    private boolean clientAuthNeeded=true;
+    private boolean clientAuthNeeded=false;
     private boolean serverAuthNeeded=false;
 
     private static KeyStore ks = loadKeyStore(KeyLength.Key_2048.keystore);
@@ -84,7 +84,7 @@ public class ClasspathKeystoreSocketFactory extends SimpleLogSource
 //        }
     }
 
-    private SSLContext getSSLContext() throws ISOException {
+    public static SSLContext getSSLContext() throws ISOException {
         try{
             SSLContext sslc = SSLContext.getInstance( "SSL" );
 //            sslc.getClientSessionContext().setSessionCacheSize(0);

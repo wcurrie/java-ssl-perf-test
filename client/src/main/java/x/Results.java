@@ -81,7 +81,7 @@ public class Results {
         try {
 //            writer.println("time,rtt,outcome");
             for (Result result : all) {
-                writer.printf("%d,%d,%s%n", result.getStart() - t, result.getRtt(), result.getOutcome());
+                writer.printf("%d,%d,%s,%d%n", result.getStart() - t, result.getRtt(), result.getOutcome(), result.getEnd() == -1 ? -1 : result.getEnd() - t);
             }
         } finally {
             writer.close();

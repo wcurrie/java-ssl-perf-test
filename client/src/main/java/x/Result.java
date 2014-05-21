@@ -3,20 +3,20 @@ package x;
 public class Result implements Comparable<Result> {
 
     private final long start;
-    private final Exception fail;
-    private final long rtt;
+    private final Throwable fail;
+    private final long end;
     private final long connectTime;
 
-    public Result(long start, long rtt, long connectTime) {
+    public Result(long start, long end, long connectTime) {
         this.start = start;
-        this.rtt = rtt;
+        this.end = end;
         this.connectTime = connectTime;
         this.fail = null;
     }
 
-    public Result(long start, Exception fail) {
+    public Result(long start, Throwable fail) {
         this.start = start;
-        this.rtt = -1;
+        this.end = -1;
         this.connectTime = -1;
         this.fail = fail;
     }
@@ -29,8 +29,12 @@ public class Result implements Comparable<Result> {
         return start;
     }
 
+    public long getEnd() {
+        return end;
+    }
+
     public long getRtt() {
-        return rtt;
+        return end == -1 ? -1 : end - start;
     }
 
     public long getConnectTime() {
