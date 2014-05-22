@@ -23,22 +23,20 @@ public class TcNativeServer {
     public static final int PORT = 8976;
 
     public static void main(String[] args) throws Exception {
-        KeyLength keyLength = null;
-        if (args.length > 0) {
-            keyLength = KeyLength.valueOf(args[0]);
-        }
         Logger logger = new Logger();
         logger.setName("logger");
-        logger.addListener(new SimpleLogListener());
+        logger.addListener(new ErrorLogListener());
 
         XMLChannel channel = new XMLChannel(new XMLPackager());
-        channel.setLogger(logger, "server");
+        if (ErrorLogListener.isDebug()) {
+            channel.setLogger(logger, "server");
+        }
         ISOServer server = new ISOServer(PORT, channel, new ThreadPool(100, 10000));
         server.setSocketFactory(new TcNativeServerSocketFactory());
         server.addISORequestListener(new PingListener());
         server.addISORequestListener(new StatsListener());
         server.setLogger(logger, "server");
-        System.out.println("Listening on " + PORT + " " + (keyLength == null ? "plain" : "ssl " + keyLength));
+        System.out.println("Listening on " + PORT + " ssl tomcat native");
         server.run();
     }
 

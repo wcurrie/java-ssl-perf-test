@@ -46,19 +46,4 @@ public class Server {
         server.run();
     }
 
-    private static class ErrorLogListener extends SimpleLogListener {
-        private static final Set<String> EXCLUDED_TAGS = new HashSet<String>(Arrays.asList("session-start", "session-end"));
-
-        @Override
-        public synchronized LogEvent log(LogEvent ev) {
-            if (shouldLog(ev)) {
-                return super.log(ev);
-            }
-            return ev;
-        }
-
-        private boolean shouldLog(LogEvent ev) {
-            return !EXCLUDED_TAGS.contains(ev.getTag());
-        }
-    }
 }

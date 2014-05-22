@@ -45,7 +45,7 @@ public class TcNativeServerSocket extends ServerSocket {
     private void bind(int port) {
         pool = Pool.create(serverPool);
         try {
-            long inetAddress = Address.info("127.0.0.1", APR_INET, port, 0, pool);
+            long inetAddress = Address.info("0.0.0.0", APR_INET, port, 0, pool);
             serverSock = create(APR_INET, SOCK_STREAM, APR_PROTO_TCP, pool);
             int rc = org.apache.tomcat.jni.Socket.bind(serverSock, inetAddress);
             if (rc != 0) {

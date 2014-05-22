@@ -64,4 +64,13 @@ public class TcNativeSocket extends Socket {
     public OutputStream getOutputStream() throws IOException {
         return new TcOutputStream(clientSock);
     }
+
+    @Override
+    public void shutdownOutput() throws IOException {
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        org.apache.tomcat.jni.Socket.destroy(clientSock);
+    }
 }
