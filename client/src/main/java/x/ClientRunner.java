@@ -33,7 +33,7 @@ public class ClientRunner {
     private void run() throws Exception {
         nThreads = 100;
         pingCount = 10000;
-        Client.ssl = true;
+        Client.ssl = false;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());

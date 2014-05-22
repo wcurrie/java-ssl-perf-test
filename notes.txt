@@ -33,3 +33,11 @@ Learnings:
 * Fail on jdk8:
     java(6404,0x120c6e000) malloc: *** error for object 0x100000000: pointer being freed was not allocated
     *** set a breakpoint in malloc_error_break to debug
+
+Created key for TC native by exporting and accidentally converting...
+1. keytool -importkeystore -srckeystore keystore.jks -destkeystore store.p12 -deststoretype PKCS12
+2. openssl pkcs12 -in store.p12 -info
+
+Installing tc native mvn dependency:
+mvn deploy:deploy-file -Durl=file:///Users/wcurrie/.m2/repository/ -Dfile=/Users/wcurrie/Downloads/tomcat-native-1.1.30-src/jni/dist/tomcat-native-1.1.30.jar -DgroupId=tc-native -DartifactId=tc-native -Dversion=1.1.30
+

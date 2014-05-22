@@ -20,7 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
-public class ClientRunner {
+public class NettyClientRunner {
 
     public static final String HOST = "192.168.0.6";
 
@@ -28,12 +28,12 @@ public class ClientRunner {
 
     public static void main(String[] args) throws Exception {
         ClasspathKeystoreSocketFactory.setKeyLength(KeyLength.Key_2048);
-        new ClientRunner().run();
+        new NettyClientRunner().run();
     }
 
     private void run() throws Exception {
-        pingCount = 100;
-        Client.ssl = true;
+        pingCount = 1000;
+        Client.ssl = false;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         StatsCollector.startMonitoring(HOST);
@@ -66,7 +66,9 @@ public class ClientRunner {
                             SSLEngine sslEngine = ClasspathKeystoreSocketFactory.getSSLContext().createSSLEngine();
                             sslEngine.setUseClientMode(true);
 
-                            ch.pipeline().addFirst(new SslHandler(sslEngine));
+                            if (Client.ssl) {
+                                ch.pipeline().addFirst(new SslHandler(sslEngine));
+                            }
                             ch.pipeline().addLast(new EchoClientHandler(resultQueue));
                         }
                     });

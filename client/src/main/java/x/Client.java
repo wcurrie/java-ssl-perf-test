@@ -3,18 +3,20 @@ package x;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.util.Logger;
+import org.jpos.util.SimpleLogListener;
 
 import java.io.IOException;
 
 public class Client {
 
-    public static boolean ssl;
+    public static boolean ssl = true;
 
     public static void main(String[] args) throws IOException, ISOException {
         Logger logger = new Logger();
         logger.setName("logger");
+        logger.addListener(new SimpleLogListener());
 
-        XMLChannel channel = newChannel("192.168.0.6");
+        XMLChannel channel = newChannel("localhost");
         channel.setLogger(logger, "client");
         channel.connect();
         long pingStart = System.currentTimeMillis();
