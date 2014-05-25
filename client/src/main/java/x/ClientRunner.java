@@ -87,11 +87,7 @@ public class ClientRunner {
         FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
         FileUtils.writeStringToFile(new File(runName + "-client-cpu.csv"), clientCpuStats);
         System.out.println("wrote " + runName);
-        int i = new ProcessBuilder("./plot.gp", runName + ".csv")
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .start().waitFor();
-        System.out.println("i = " + i);
+        GnuPlot.plot(runName);
     }
 
     private String runName() {
