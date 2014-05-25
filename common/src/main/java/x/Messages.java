@@ -55,4 +55,10 @@ public class Messages {
             throw new RuntimeException();
         }
     }
+
+    public static ISOMsg pong(ISOMsg m) throws ISOException {
+        ISOMsg response = (ISOMsg) m.clone();
+        response.setResponseMTI();
+        return response;
+    }
 }

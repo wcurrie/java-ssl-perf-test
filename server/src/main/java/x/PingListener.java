@@ -14,14 +14,13 @@ public class PingListener implements ISORequestListener {
             return false;
         }
 
-        ISOMsg response = (ISOMsg) m.clone();
         try {
-            response.setResponseMTI();
-            source.send(response);
+            source.send(Messages.pong(m));
         } catch (ISOException e) {
             e.printStackTrace();
         } catch (IOException ignored) {
         }
         return true;
     }
+
 }

@@ -16,6 +16,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class NettyClient {
     public static void main(String[] args) throws Exception {
+        final LinkedBlockingQueue<Result> results = new LinkedBlockingQueue<Result>();
+
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -28,8 +30,11 @@ public class NettyClient {
                             SSLEngine sslEngine = ClasspathKeystoreSocketFactory.getSSLContext().createSSLEngine();
                             sslEngine.setUseClientMode(true);
 
-                            ch.pipeline().addFirst(new SslHandler(sslEngine));
-                            ch.pipeline().addLast(new EchoClientHandler(new LinkedBlockingQueue<Result>()));
+                            ChannelPipeline pipeline = ch.pipeline();
+                            pipeline.addFirst(new SslHandler(sslEngine));
+                            pipeline.addLast(new ISOMsgEncoder());
+                            pipeline.addLast(new ISOMsgDecoder());
+                            pipeline.addLast(new EchoClientHandler(results));
                         }
                     });
             System.out.println("connecting");
@@ -37,8 +42,13 @@ public class NettyClient {
             System.out.println("connected");
             f.channel().closeFuture().sync();
         } finally {
+            System.out.println("shutting down");
             group.shutdownGracefully().sync();
         }
+
+        System.out.println("awaiting result");
+        Result result = results.take();
+        System.out.println(result);
     }
 
 }

@@ -54,4 +54,15 @@ public class Result implements Comparable<Result> {
     private static int compare(long x, long y) {
         return (x < y) ? -1 : ((x == y) ? 0 : 1);
     }
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "start=" + start +
+                ", end=" + end +
+                ", rtt=" + getRtt() +
+                ", connectTime=" + connectTime +
+                ", fail=" + fail +
+                '}';
+    }
 }

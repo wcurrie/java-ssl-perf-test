@@ -68,6 +68,8 @@ public class TcNativeServerSocket extends ServerSocket {
             long clientSock = org.apache.tomcat.jni.Socket.accept(serverSock);
             org.apache.tomcat.jni.Socket.timeoutSet(clientSock, -1);
             SSLSocket.attach(serverCtx, clientSock);
+            SSLExt.sslSetMode(clientSock, SSLExt.SSL_MODE_ENABLE_PARTIAL_WRITE |
+                    SSLExt.SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
             int i = SSLSocket.handshake(clientSock);
             if (i != 0) {
                 org.apache.tomcat.jni.Socket.destroy(clientSock);

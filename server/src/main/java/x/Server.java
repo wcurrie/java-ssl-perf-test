@@ -29,11 +29,12 @@ public class Server {
         }
         Logger logger = new Logger();
         logger.setName("logger");
-//        logger.addListener(new ErrorLogListener());
-        logger.addListener(new SimpleLogListener());
+        logger.addListener(new ErrorLogListener());
 
         XMLChannel channel = new XMLChannel(new XMLPackager());
-        channel.setLogger(logger, "server");
+        if (ErrorLogListener.isDebug()) {
+            channel.setLogger(logger, "server");
+        }
         ISOServer server = new ISOServer(PORT, channel, new ThreadPool(100, 10000));
         if (keyLength != null) {
             ClasspathKeystoreSocketFactory.setKeyLength(keyLength);
