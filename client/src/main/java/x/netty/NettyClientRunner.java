@@ -3,12 +3,14 @@ package x.netty;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
 import x.*;
 
 import javax.net.ssl.SSLEngine;
@@ -22,7 +24,7 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class NettyClientRunner {
 
-    public static final String HOST = "192.168.0.6";
+    public static final String HOST = "localhost";
 
     private int pingCount;
 
@@ -32,8 +34,8 @@ public class NettyClientRunner {
     }
 
     private void run() throws Exception {
-        pingCount = 1000;
-        Client.ssl = false;
+        pingCount = 50;
+        Client.ssl = true;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         StatsCollector.startMonitoring(HOST);
@@ -66,10 +68,13 @@ public class NettyClientRunner {
                             SSLEngine sslEngine = ClasspathKeystoreSocketFactory.getSSLContext().createSSLEngine();
                             sslEngine.setUseClientMode(true);
 
+                            ChannelPipeline pipeline = ch.pipeline();
                             if (Client.ssl) {
-                                ch.pipeline().addFirst(new SslHandler(sslEngine));
+                                pipeline.addFirst(new SslHandler(sslEngine));
                             }
-                            ch.pipeline().addLast(new EchoClientHandler(resultQueue));
+                            pipeline.addLast(new ISOMsgEncoder());
+                            pipeline.addLast(new ISOMsgDecoder());
+                            pipeline.addLast(new EchoClientHandler(resultQueue));
                         }
                     });
             List<ChannelFuture> closeFutures = new ArrayList<ChannelFuture>();
@@ -77,14 +82,14 @@ public class NettyClientRunner {
                 ChannelFuture f = b.connect().channel().closeFuture();
                 closeFutures.add(f);
             }
-            System.out.println("Waiting for closes");
+            System.out.println(new DateTime() + ": Waiting for closes");
             for (ChannelFuture f : closeFutures) {
                 f.await();
             }
         } finally {
-            System.out.println("Shutting down");
+            System.out.println(new DateTime() + ": Shutting down");
             group.shutdownGracefully().sync();
-            System.out.println("Shut down");
+            System.out.println(new DateTime() + ": Shut down");
         }
         Results results = new Results();
         for (Result result : resultQueue) {

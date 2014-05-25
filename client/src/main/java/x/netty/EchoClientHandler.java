@@ -27,7 +27,7 @@ public class EchoClientHandler extends SimpleChannelInboundHandler<ISOMsg> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        new Result(sentTime, cause);
+        results.add(new Result(sentTime, cause));
         ctx.close();
     }
 

@@ -15,7 +15,7 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class ClientRunner {
 
-    public static final String HOST = "192.168.0.6";
+    public static final String HOST = "localhost";
 
     private int nThreads;
     private int pingCount;
@@ -31,10 +31,10 @@ public class ClientRunner {
     }
 
     private void run() throws Exception {
-        nThreads = 100;
-        pingCount = 10000;
-        Client.ssl = false;
-        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
+        nThreads = 10;
+        pingCount = 1000;
+        Client.ssl = true;
+        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
         executor = Executors.newFixedThreadPool(nThreads);
@@ -86,7 +86,7 @@ public class ClientRunner {
     private String runName() {
         String sslConfig;
         if (Client.ssl) {
-            sslConfig = (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no") + "-session-cache";
+            sslConfig = "tc-native-" + (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no") + "-session-cache";
         } else {
             sslConfig = "plaintext";
         }
