@@ -1,11 +1,16 @@
 #!/bin/sh
 
-a=results/100-threads-10000-pings-with-session-cache.csv
-a1=results/100-threads-10000-pings-with-session-cache-server-cpu.csv
-b=results/100-threads-10000-pings-no-session-cache.csv
-b1=results/100-threads-10000-pings-no-session-cache-server-cpu.csv
+server_cpu=${in%.csv}-server-cpu.csv
+client_cpu=${in%.csv}-client-cpu.csv
+a=results/100-threads-10000-pings-jsse-with-session-cache.csv
+a1=${a%.csv}-server-cpu.csv
+a2=${a%.csv}-client-cpu.csv
+b=results/100-threads-10000-pings-jsse-no-session-cache.csv
+b1=${b%.csv}-server-cpu.csv
+b2=${b%.csv}-client-cpu.csv
 c=results/100-threads-10000-pings-plaintext.csv
-c1=results/100-threads-10000-pings-plaintext-server-cpu.csv
+c1=${c%.csv}-server-cpu.csv
+c2=${c%.csv}-client-cpu.csv
 out=results/diff.png
 
 gnuplot <<EOF
@@ -29,8 +34,8 @@ set title "server cpu usage % time during soak test"
 set ylabel "cpu %"
 set xlabel
 set xrange restore
-plot "$a1" using 1:4 title "cpu % cache",\
-     "$b1" using 1:4 title "cpu % no cache",\
-     "$c1" using 1:4 title "cpu % no ssl"
+plot "$a1" using 1:4 title "server cpu % cache",\
+     "$b1" using 1:4 title "server cpu % no cache",\
+     "$c1" using 1:4 title "server cpu % no ssl"
 unset multiplot     
 EOF

@@ -31,7 +31,7 @@ public class Server {
         logger.setName("logger");
         logger.addListener(new ErrorLogListener());
 
-        XMLChannel channel = new XMLChannel(new XMLPackager());
+        XMLChannel channel = new XMLChannel(Messages.PACKAGER);
         if (ErrorLogListener.isDebug()) {
             channel.setLogger(logger, "server");
         }

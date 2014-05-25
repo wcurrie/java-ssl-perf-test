@@ -26,24 +26,13 @@ public class StatsListener implements ISORequestListener {
                 cpuPoller.die();
                 List<CpuPoller.Stat> stats = cpuPoller.since(Long.parseLong(m.getString("48.1")));
                 ISOMsg response = ack(m);
-                response.set("48.2", toCsv(stats));
+                response.set("48.2", CpuPoller.Stat.toCsv(stats));
                 source.send(response);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return true;
-    }
-
-    private String toCsv(List<CpuPoller.Stat> stats) {
-        StringBuilder b = new StringBuilder();
-        for (CpuPoller.Stat s : stats) {
-            b.append(s.getTime()).append(",")
-                    .append(s.getLoadAverage()).append(",")
-                    .append(s.getSystemCpuLoad()).append(",")
-                    .append(s.getProcessCpuLoad()).append("\n");
-        }
-        return b.toString();
     }
 
     private ISOMsg ack(ISOMsg m) throws ISOException {

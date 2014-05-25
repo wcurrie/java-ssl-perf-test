@@ -15,7 +15,7 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class ClientRunner {
 
-    public static final String HOST = "localhost";
+    public static final String HOST = "192.168.0.6";
 
     private int nThreads;
     private int pingCount;
@@ -24,6 +24,7 @@ public class ClientRunner {
     private CyclicBarrier cyclicBarrier;
     private ExecutorService executor;
     private ExecutorService cleaner;
+    private String serverType;
 
     public static void main(String[] args) throws Exception {
         ClasspathKeystoreSocketFactory.setKeyLength(KeyLength.Key_2048);
@@ -31,9 +32,10 @@ public class ClientRunner {
     }
 
     private void run() throws Exception {
-        nThreads = 10;
-        pingCount = 1000;
+        nThreads = 100;
+        pingCount = 10000;
         Client.ssl = true;
+        serverType = "jsse-";
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
@@ -67,6 +69,7 @@ public class ClientRunner {
 
     private void runTest() throws Exception {
         StatsCollector.startMonitoring(HOST);
+        StatsCollector.startLocalMonitoring();
 
         long t = System.currentTimeMillis();
         List<Future<Result>> rttFutures = kickOffPings(pingCount);
@@ -74,6 +77,7 @@ public class ClientRunner {
         long elapsed = System.currentTimeMillis() - t;
 
         String serverCpuStats = StatsCollector.collectStats(HOST, t);
+        String clientCpuStats = StatsCollector.collectLocalStats(t);
 
         String report = String.format("Took %dms%n%s", elapsed, results);
         System.out.println(report);
@@ -81,12 +85,19 @@ public class ClientRunner {
         results.toCsv(runName + ".csv", t);
         FileUtils.writeStringToFile(new File(runName + ".txt"), report);
         FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
+        FileUtils.writeStringToFile(new File(runName + "-client-cpu.csv"), clientCpuStats);
+        System.out.println("wrote " + runName);
+        int i = new ProcessBuilder("./plot.gp", runName + ".csv")
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .start().waitFor();
+        System.out.println("i = " + i);
     }
 
     private String runName() {
         String sslConfig;
         if (Client.ssl) {
-            sslConfig = "tc-native-" + (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no") + "-session-cache";
+            sslConfig = serverType + (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled ? "with" : "no") + "-session-cache";
         } else {
             sslConfig = "plaintext";
         }

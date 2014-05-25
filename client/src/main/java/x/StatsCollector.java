@@ -5,6 +5,8 @@ import org.jpos.iso.channel.XMLChannel;
 
 public class StatsCollector {
 
+    private static CpuPoller cpuPoller;
+
     public static void startMonitoring(String host) throws Exception {
         XMLChannel channel = Client.newChannel(host);
         channel.connect();
@@ -19,21 +21,20 @@ public class StatsCollector {
         channel.send(Messages.collectStats(since));
         ISOMsg response = channel.receive();
         channel.disconnect();
-        return baseLineTimes(response.getString("48.2"), since);
+        return response.getString("48.2");
     }
 
-    public static String baseLineTimes(String csv, long t) {
-        StringBuilder b = new StringBuilder();
-        for (String line : csv.split("\n")) {
-            String[] fields = line.split(",");
-            b.append(Long.parseLong(fields[0]) - t);
-            for (int i = 1; i < fields.length; i++) {
-                String field = fields[i];
-                b.append(",").append(field);
-            }
-            b.append("\n");
+    public static void startLocalMonitoring() {
+        cpuPoller = new CpuPoller();
+    }
+
+    public static String collectLocalStats(long since) {
+        try {
+            cpuPoller.die();
+            return CpuPoller.Stat.toCsv(cpuPoller.since(since));
+        } finally {
+            cpuPoller = null;
         }
-        return b.toString();
     }
 
     public static void main(String[] args) throws Exception {

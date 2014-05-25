@@ -9,7 +9,7 @@ import java.util.Date;
 
 public class Messages {
 
-    static final ISOPackager PACKAGER = newPackager();
+    public static final ISOPackager PACKAGER = newPackager();
 
     public static ISOMsg startMonitoring() throws ISOException {
         ISOMsg msg = new ISOMsg("0900");

@@ -1,9 +1,10 @@
 #!/bin/sh
 in=$1
 out=${in%.csv}.png
-cpu=${in%.csv}-server-cpu.csv
+server_cpu=${in%.csv}-server-cpu.csv
+client_cpu=${in%.csv}-client-cpu.csv
 
-gnuplot <<EOF
+/opt/local/bin/gnuplot <<EOF
 set datafile separator ","
 set term pngcairo dashed size 1280,960
 set output "$out"
@@ -24,5 +25,6 @@ set ylabel "cpu %"
 set xlabel
 set xrange restore
 set yrange [0:100]
-plot "$cpu" using 1:4 title "cpu load"
+plot "$server_cpu" using 1:4 title "server cpu",\
+     "$client_cpu" using 1:4 title "client cpu"
 EOF
