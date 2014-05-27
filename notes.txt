@@ -43,3 +43,6 @@ mvn deploy:deploy-file -Durl=file:///Users/wcurrie/.m2/repository/ -Dfile=/Users
 
 Building tc native
 ./configure --with-apr=/opt/local/bin/apr-1-config --with-ssl=yes --prefix=/Users/wcurrie/IdeaProjects/jpos-ssl-perf/tcnative --with-java-home=/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home/
+
+Running tc native
+java -Djava.library.path=/home/wcurrie/tcnative/lib/ -cp server.jar x.TcNativeServer

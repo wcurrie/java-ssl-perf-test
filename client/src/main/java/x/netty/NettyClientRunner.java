@@ -46,8 +46,8 @@ public class NettyClientRunner {
         Results results = runTest();
         long elapsed = System.currentTimeMillis() - t;
 
-        String serverCpuStats = StatsCollector.collectStats(HOST, t);
-        String clientCpuStats = StatsCollector.collectLocalStats(t);
+        String serverCpuStats = StatsCollector.collectCpuStats(HOST, t);
+        String clientCpuStats = StatsCollector.collectLocalCpuStats(t);
 
         String report = String.format("Took %dms%n%s", elapsed, results);
         System.out.println(report);

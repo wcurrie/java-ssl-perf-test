@@ -3,6 +3,7 @@ in=$1
 out=${in%.csv}.png
 server_cpu=${in%.csv}-server-cpu.csv
 client_cpu=${in%.csv}-client-cpu.csv
+handshakes=${in%.csv}-handshake-timing.csv
 
 /opt/local/bin/gnuplot <<EOF
 set datafile separator ","
@@ -16,6 +17,7 @@ set xlabel "time into test run (ms)"
 set ylabel "ping rtt (ms)"
 set xrange [] writeback
 plot "$in" using 4:(\$2 == -1 ? 1/0 : \$2):1:4 title "rtts" with xerrorbars lt 3, \
+     "$handshakes" using 2:3:1:2 title "handshakes" with xerrorbars lt 4, \
      "$in" using 1:(\$2 == -1 ? 0 : 1/0) title "errors"
 
 set size 1,0.2

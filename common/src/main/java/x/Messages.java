@@ -61,4 +61,17 @@ public class Messages {
         response.setResponseMTI();
         return response;
     }
+
+    public static ISOMsg clearHandshakeTimings() throws ISOException {
+        ISOMsg msg = new ISOMsg("0900");
+        msg.set(70, "3");
+        return msg;
+    }
+
+    public static ISOMsg collectHandshakeTimings(long since) throws ISOException {
+        ISOMsg msg = new ISOMsg("0900");
+        msg.set("48.1", String.valueOf(since));
+        msg.set(70, "4");
+        return msg;
+    }
 }

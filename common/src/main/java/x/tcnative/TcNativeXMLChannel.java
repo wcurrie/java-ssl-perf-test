@@ -17,7 +17,6 @@ public class TcNativeXMLChannel extends XMLChannel {
     @Override
     public ISOMsg receive() throws IOException, ISOException {
         if (!sslHandshakeDone) {
-            System.out.println(Thread.currentThread() + " handshaking");
             TcNativeSocket socket = (TcNativeSocket) getSocket();
             socket.doSslHandshake();
             sslHandshakeDone = true;

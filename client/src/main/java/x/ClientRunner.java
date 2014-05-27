@@ -15,7 +15,7 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class ClientRunner {
 
-    public static final String HOST = "localhost";
+    public static final String HOST = "192.168.0.6";
 
     private int nThreads;
     private int pingCount;
@@ -32,10 +32,10 @@ public class ClientRunner {
     }
 
     private void run() throws Exception {
-        nThreads = 10;
+        nThreads = 100;
         pingCount = 1000;
         Client.ssl = true;
-        serverType = "jsse-";
+        serverType = "tcnative-";
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
@@ -70,14 +70,16 @@ public class ClientRunner {
     private void runTest() throws Exception {
         StatsCollector.startMonitoring(HOST);
         StatsCollector.startLocalMonitoring();
+        StatsCollector.clearHandshakeTimings(HOST);
 
         long t = System.currentTimeMillis();
         List<Future<Result>> rttFutures = kickOffPings(pingCount);
         Results results = summarise(rttFutures);
         long elapsed = System.currentTimeMillis() - t;
 
-        String serverCpuStats = StatsCollector.collectStats(HOST, t);
-        String clientCpuStats = StatsCollector.collectLocalStats(t);
+        String serverCpuStats = StatsCollector.collectCpuStats(HOST, t);
+        String clientCpuStats = StatsCollector.collectLocalCpuStats(t);
+        String handshakeTimings = StatsCollector.collectHandshakeTimings(HOST, t);
 
         String report = String.format("Took %dms%n%s", elapsed, results);
         System.out.println(report);
@@ -86,6 +88,7 @@ public class ClientRunner {
         FileUtils.writeStringToFile(new File(runName + ".txt"), report);
         FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
         FileUtils.writeStringToFile(new File(runName + "-client-cpu.csv"), clientCpuStats);
+        FileUtils.writeStringToFile(new File(runName + "-handshake-timing.csv"), handshakeTimings);
         System.out.println("wrote " + runName);
         GnuPlot.plot(runName);
     }

@@ -78,12 +78,13 @@ public class TcNativeSocket extends Socket {
 
     // so it's not on the server accept thread. good idea?
     public void doSslHandshake() {
-        long t = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         int i = SSLSocket.handshake(clientSock);
         if (i != 0) {
             org.apache.tomcat.jni.Socket.close(clientSock);
             throw new RuntimeException("Handshake error: " + SSL.getLastError());
         }
-        long elapsed = System.currentTimeMillis() - t;
+        long end = System.currentTimeMillis();
+        HandshakeTiming.record(start, end);
     }
 }

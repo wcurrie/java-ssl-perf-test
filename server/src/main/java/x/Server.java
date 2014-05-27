@@ -7,6 +7,7 @@ import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 import org.jpos.util.SimpleLogListener;
 import org.jpos.util.ThreadPool;
+import x.jpos.HandshakeTimingXMLChannel;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -31,7 +32,7 @@ public class Server {
         logger.setName("logger");
         logger.addListener(new ErrorLogListener());
 
-        XMLChannel channel = new XMLChannel(Messages.PACKAGER);
+        XMLChannel channel = new HandshakeTimingXMLChannel(Messages.PACKAGER);
         if (ErrorLogListener.isDebug()) {
             channel.setLogger(logger, "server");
         }
