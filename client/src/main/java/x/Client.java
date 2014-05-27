@@ -3,7 +3,6 @@ package x;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.util.Logger;
-import org.jpos.util.SimpleLogListener;
 
 import java.io.IOException;
 
@@ -14,17 +13,20 @@ public class Client {
     public static void main(String[] args) throws IOException, ISOException {
         Logger logger = new Logger();
         logger.setName("logger");
-        logger.addListener(new SimpleLogListener());
+        logger.addListener(new ErrorLogListener());
 
-        XMLChannel channel = newChannel("localhost");
-        channel.setLogger(logger, "client");
-        channel.connect();
-        long pingStart = System.currentTimeMillis();
-        ping(channel);
-        long l = System.currentTimeMillis() - pingStart;
-        channel.disconnect();
+        for (int i = 0; i < 1; i++) {
+            XMLChannel channel = newChannel("localhost");
+            channel.setLogger(logger, "client");
+            long connectStart = System.currentTimeMillis();
+            channel.connect();
+            long pingStart = System.currentTimeMillis();
+            ping(channel);
+            long l = System.currentTimeMillis() - pingStart;
+            channel.disconnect();
 
-        System.out.printf("%dms%n", l);
+            System.out.printf("round %d ping %dms connect %dms%n", i, l, (pingStart-connectStart));
+        }
     }
 
     public static XMLChannel newChannel(String host) {

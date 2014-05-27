@@ -41,3 +41,5 @@ Created key for TC native by exporting and accidentally converting...
 Installing tc native mvn dependency:
 mvn deploy:deploy-file -Durl=file:///Users/wcurrie/.m2/repository/ -Dfile=/Users/wcurrie/Downloads/tomcat-native-1.1.30-src/jni/dist/tomcat-native-1.1.30.jar -DgroupId=tc-native -DartifactId=tc-native -Dversion=1.1.30
 
+Building tc native
+./configure --with-apr=/opt/local/bin/apr-1-config --with-ssl=yes --prefix=/Users/wcurrie/IdeaProjects/jpos-ssl-perf/tcnative --with-java-home=/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home/

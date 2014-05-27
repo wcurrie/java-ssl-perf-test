@@ -27,6 +27,6 @@ public class TcOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
-        Socket.destroy(clientSock);
+        Socket.close(clientSock);
     }
 }

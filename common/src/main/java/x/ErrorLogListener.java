@@ -14,7 +14,7 @@ public class ErrorLogListener extends SimpleLogListener {
         if (isDebug()) {
             EXCLUDED_TAGS = Collections.emptySet();
         } else {
-            EXCLUDED_TAGS = new HashSet<String>(Arrays.asList("session-start", "session-end"));
+            EXCLUDED_TAGS = new HashSet<String>(Arrays.asList("session-start", "session-end", "send", "receive"));
         }
     }
 

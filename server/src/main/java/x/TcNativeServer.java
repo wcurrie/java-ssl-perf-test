@@ -3,17 +3,10 @@ package x;
 import org.jpos.iso.ISOServer;
 import org.jpos.iso.channel.XMLChannel;
 import org.jpos.iso.packager.XMLPackager;
-import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
-import org.jpos.util.SimpleLogListener;
 import org.jpos.util.ThreadPool;
 import x.tcnative.TcNativeServerSocketFactory;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import static x.ClasspathKeystoreSocketFactory.KeyLength;
+import x.tcnative.TcNativeXMLChannel;
 
 public class TcNativeServer {
     static {
@@ -27,7 +20,7 @@ public class TcNativeServer {
         logger.setName("logger");
         logger.addListener(new ErrorLogListener());
 
-        XMLChannel channel = new XMLChannel(new XMLPackager());
+        XMLChannel channel = new TcNativeXMLChannel(new XMLPackager());
         if (ErrorLogListener.isDebug()) {
             channel.setLogger(logger, "server");
         }

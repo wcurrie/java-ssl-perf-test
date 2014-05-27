@@ -33,6 +33,6 @@ public class TcInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        Socket.destroy(clientSock);
+        Socket.close(clientSock);
     }
 }

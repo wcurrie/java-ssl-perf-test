@@ -1,6 +1,8 @@
 package x.tcnative;
 
 import org.apache.tomcat.jni.Address;
+import org.apache.tomcat.jni.SSL;
+import org.apache.tomcat.jni.SSLSocket;
 import org.apache.tomcat.jni.Sockaddr;
 
 import java.io.IOException;
@@ -71,6 +73,17 @@ public class TcNativeSocket extends Socket {
 
     @Override
     public synchronized void close() throws IOException {
-        org.apache.tomcat.jni.Socket.destroy(clientSock);
+        org.apache.tomcat.jni.Socket.close(clientSock);
+    }
+
+    // so it's not on the server accept thread. good idea?
+    public void doSslHandshake() {
+        long t = System.currentTimeMillis();
+        int i = SSLSocket.handshake(clientSock);
+        if (i != 0) {
+            org.apache.tomcat.jni.Socket.close(clientSock);
+            throw new RuntimeException("Handshake error: " + SSL.getLastError());
+        }
+        long elapsed = System.currentTimeMillis() - t;
     }
 }

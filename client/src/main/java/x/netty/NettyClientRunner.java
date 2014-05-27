@@ -1,10 +1,7 @@
 package x.netty;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -20,8 +17,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static x.ClasspathKeystoreSocketFactory.KeyLength;
@@ -39,7 +35,7 @@ public class NettyClientRunner {
     }
 
     private void run() throws Exception {
-        pingCount = 1000;
+        pingCount = 10000;
         Client.ssl = true;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
@@ -68,10 +64,12 @@ public class NettyClientRunner {
         if (ClasspathKeystoreSocketFactory.clientSessionCacheEnabled) {
             sharedSslContext = ClasspathKeystoreSocketFactory.getSSLContext();
         }
-        final Queue<Result> resultQueue = new ConcurrentLinkedQueue<Result>();
-        EventLoopGroup group = new NioEventLoopGroup(50);
+        final BlockingQueue<Result> resultQueue = new LinkedBlockingQueue<Result>();
+        EventLoopGroup group = new NioEventLoopGroup(200);
         try {
             Bootstrap b = new Bootstrap();
+            b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
+            b.option(ChannelOption.SO_LINGER, 0);
             b.group(group)
                     .channel(NioSocketChannel.class)
                     .remoteAddress(new InetSocketAddress(HOST, 8976))
@@ -90,10 +88,20 @@ public class NettyClientRunner {
                             pipeline.addLast(new ISOMsgDecoder());
                             pipeline.addLast(new EchoClientHandler(resultQueue));
                         }
+
+                        @Override
+                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                            resultQueue.add(new Result(System.currentTimeMillis(), cause));
+                        }
                     });
             List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
             for (int i = 0; i < pingCount; i++) {
-                futures.add(b.connect());
+                ChannelFuture future = b.connect();
+                future.addListener(new FailureListener(resultQueue));
+                futures.add(future);
+//                if (i % 10 == 0) {
+//                    Thread.sleep(100);
+//                }
             }
             System.out.println(new DateTime() + ": Waiting for closes");
             for (ChannelFuture f : futures) {

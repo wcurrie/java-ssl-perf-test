@@ -15,7 +15,7 @@ import static x.ClasspathKeystoreSocketFactory.KeyLength;
 
 public class ClientRunner {
 
-    public static final String HOST = "192.168.0.6";
+    public static final String HOST = "localhost";
 
     private int nThreads;
     private int pingCount;
@@ -32,11 +32,11 @@ public class ClientRunner {
     }
 
     private void run() throws Exception {
-        nThreads = 100;
-        pingCount = 10000;
+        nThreads = 10;
+        pingCount = 1000;
         Client.ssl = true;
         serverType = "jsse-";
-        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = false;
+        ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         cyclicBarrier = new CyclicBarrier(nThreads, newProgressMeter());
         executor = Executors.newFixedThreadPool(nThreads);

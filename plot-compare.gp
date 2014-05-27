@@ -1,14 +1,16 @@
 #!/bin/sh
 
+prefix=$1
+
 server_cpu=${in%.csv}-server-cpu.csv
 client_cpu=${in%.csv}-client-cpu.csv
-a=results/100-threads-10000-pings-jsse-with-session-cache.csv
+a=results/${prefix}-with-session-cache.csv
 a1=${a%.csv}-server-cpu.csv
 a2=${a%.csv}-client-cpu.csv
-b=results/100-threads-10000-pings-jsse-no-session-cache.csv
+b=results/${prefix}-no-session-cache.csv
 b1=${b%.csv}-server-cpu.csv
 b2=${b%.csv}-client-cpu.csv
-c=results/100-threads-10000-pings-plaintext.csv
+c=results/${prefix%-*}-plaintext.csv
 c1=${c%.csv}-server-cpu.csv
 c2=${c%.csv}-client-cpu.csv
 out=results/diff.png
