@@ -35,12 +35,13 @@ public class NettyClientRunner {
     }
 
     private void run() throws Exception {
-        pingCount = 10000;
+        pingCount = 1000;
         Client.ssl = true;
         ClasspathKeystoreSocketFactory.clientSessionCacheEnabled = true;
 
         StatsCollector.startMonitoring(HOST);
         StatsCollector.startLocalMonitoring();
+        StatsCollector.clearHandshakeTimings(HOST);
 
         long t = System.currentTimeMillis();
         Results results = runTest();
@@ -48,6 +49,7 @@ public class NettyClientRunner {
 
         String serverCpuStats = StatsCollector.collectCpuStats(HOST, t);
         String clientCpuStats = StatsCollector.collectLocalCpuStats(t);
+        String handshakeTimings = StatsCollector.collectHandshakeTimings(HOST, t);
 
         String report = String.format("Took %dms%n%s", elapsed, results);
         System.out.println(report);
@@ -56,6 +58,7 @@ public class NettyClientRunner {
         FileUtils.writeStringToFile(new File(runName + ".txt"), report);
         FileUtils.writeStringToFile(new File(runName + "-server-cpu.csv"), serverCpuStats);
         FileUtils.writeStringToFile(new File(runName + "-client-cpu.csv"), clientCpuStats);
+        FileUtils.writeStringToFile(new File(runName + "-handshake-timing.csv"), handshakeTimings);
         System.out.println("wrote " + runName);
         GnuPlot.plot(runName);
     }
@@ -99,8 +102,9 @@ public class NettyClientRunner {
                 ChannelFuture future = b.connect();
                 future.addListener(new FailureListener(resultQueue));
                 futures.add(future);
+                // rate limit...
 //                if (i % 10 == 0) {
-//                    Thread.sleep(100);
+                    Thread.sleep(1);
 //                }
             }
             System.out.println(new DateTime() + ": Waiting for closes");

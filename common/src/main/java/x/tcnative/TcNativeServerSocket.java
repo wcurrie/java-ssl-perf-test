@@ -17,6 +17,7 @@ public class TcNativeServerSocket extends ServerSocket {
     private final long serverCtx;
     private long pool;
     private long serverSock;
+    private boolean closed;
 
     public TcNativeServerSocket(int port) throws IOException {
         serverPool = Pool.create(0);
@@ -58,6 +59,15 @@ public class TcNativeServerSocket extends ServerSocket {
     }
 
     @Override
+    public void close() throws IOException {
+        if (!closed) {
+            org.apache.tomcat.jni.Socket.close(serverSock);
+            Pool.destroy(pool);
+            closed = true;
+        }
+    }
+
+    @Override
     public void bind(SocketAddress endpoint) throws IOException {
         throw new UnsupportedOperationException();
     }
@@ -69,7 +79,8 @@ public class TcNativeServerSocket extends ServerSocket {
             org.apache.tomcat.jni.Socket.timeoutSet(clientSock, -1);
             SSLSocket.attach(serverCtx, clientSock);
             return new TcNativeSocket(clientSock);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            close();
             throw new RuntimeException(e);
         }
     }
