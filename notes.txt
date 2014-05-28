@@ -46,3 +46,16 @@ Building tc native
 
 Running tc native
 java -Djava.library.path=/home/wcurrie/tcnative/lib/ -cp server.jar x.TcNativeServer
+
+Increasing file descriptor count on server (needed with netty).
+sudo sh -c "ulimit -n 65535 && exec su $LOGNAME"
+
+Next steps:
+* tomcat native on client side too
+ - impact on jsse server
+* Bounce between two server processes. Show impact of TLS session tickets with shared ticket key.
+* Netty on server
+ - presumably only better to handle a large number of clients where most are idle...
+ - connect a large number of clients and ping periodically (randomly?). compare rtt between thread per client and async. vary number of clients.
+
+
