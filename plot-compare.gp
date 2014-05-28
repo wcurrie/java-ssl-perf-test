@@ -22,7 +22,7 @@ set output "$out"
 set multiplot
 set size 1,0.8
 set origin 0,0.2
-set title "ping round trip time during soak test"
+set title "$prefix ping round trip time during soak test"
 set xlabel "time into test run (ms)"
 set ylabel "ping rtt (ms)"
 set xrange [] writeback

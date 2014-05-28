@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class TcOutputStream extends OutputStream {
+    private final TcNativeSocket socket;
     private final long clientSock;
 
-    public TcOutputStream(long clientSock) {
-        this.clientSock = clientSock;
+    public TcOutputStream(TcNativeSocket tcNativeSocket) {
+        this.socket = tcNativeSocket;
+        this.clientSock = tcNativeSocket.getClientSock();
     }
 
     @Override
@@ -27,6 +29,6 @@ public class TcOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
-        Socket.close(clientSock);
+        socket.close();
     }
 }

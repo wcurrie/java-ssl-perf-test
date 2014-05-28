@@ -8,10 +8,12 @@ import java.io.InputStream;
 
 public class TcInputStream extends InputStream {
 
+    private final TcNativeSocket tcNativeSocket;
     private final long clientSock;
 
-    public TcInputStream(long clientSock) {
-        this.clientSock = clientSock;
+    public TcInputStream(TcNativeSocket socket) {
+        this.tcNativeSocket = socket;
+        this.clientSock = socket.getClientSock();
     }
 
     @Override
@@ -33,6 +35,6 @@ public class TcInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        Socket.close(clientSock);
+        tcNativeSocket.close();
     }
 }

@@ -18,6 +18,7 @@ public class TcNativeSocket extends Socket {
     private String name;
     private int remotePort;
     private int localPort;
+    private boolean closed;
 
     public TcNativeSocket(long clientSock) {
         this.clientSock = clientSock;
@@ -59,21 +60,29 @@ public class TcNativeSocket extends Socket {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new TcInputStream(clientSock);
+        return new TcInputStream(this);
     }
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        return new TcOutputStream(clientSock);
+        return new TcOutputStream(this);
     }
 
     @Override
     public void shutdownOutput() throws IOException {
     }
 
+    public long getClientSock() {
+        return clientSock;
+    }
+
     @Override
-    public synchronized void close() throws IOException {
-        org.apache.tomcat.jni.Socket.close(clientSock);
+    public synchronized void close() {
+        if (!closed) {
+            org.apache.tomcat.jni.Socket.close(clientSock);
+            org.apache.tomcat.jni.Socket.destroy(clientSock);
+            closed = true;
+        }
     }
 
     // so it's not on the server accept thread. good idea?
@@ -81,7 +90,7 @@ public class TcNativeSocket extends Socket {
         long start = System.currentTimeMillis();
         int i = SSLSocket.handshake(clientSock);
         if (i != 0) {
-            org.apache.tomcat.jni.Socket.close(clientSock);
+            close();
             throw new RuntimeException("Handshake error: " + SSL.getLastError());
         }
         long end = System.currentTimeMillis();

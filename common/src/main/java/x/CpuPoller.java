@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class CpuPoller implements Runnable {
 
@@ -23,7 +24,14 @@ public class CpuPoller implements Runnable {
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
         }
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "cpu-poller");
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
         executorService.submit(this);
     }
 
